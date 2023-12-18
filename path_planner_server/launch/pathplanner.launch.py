@@ -29,24 +29,6 @@ def generate_launch_description():
         TimerAction(
             period=5.0,
             actions=[
-            
-            Node(
-                package='nav2_map_server',
-                executable='map_server',
-                name='map_server',
-                output='screen',
-                parameters=[{'use_sim_time': True}, 
-                            {'yaml_filename':map_file}],
-                remappings=[('/cmd_vel', '/robot/cmd_vel')]
-            ),
-            Node(
-                package='nav2_amcl',
-                executable='amcl',
-                name='amcl',
-                output='screen',
-                parameters=[nav2_yaml],
-                remappings=[('/cmd_vel', '/robot/cmd_vel')]
-            ),
             Node(
                 package='nav2_controller',
                 executable='controller_server',
@@ -68,8 +50,8 @@ def generate_launch_description():
                 executable='recoveries_server',
                 name='recoveries_server',
                 parameters=[recovery_yaml],
-                remappings=[('/cmd_vel', '/robot/cmd_vel')],
-                output='screen'
+                output='screen',
+                remappings=[('/cmd_vel', '/robot/cmd_vel')]
             ),
             Node(
                 package='nav2_bt_navigator',
@@ -86,9 +68,7 @@ def generate_launch_description():
                 name='lifecycle_manager',
                 output='screen',
                 parameters=[{'autostart': True},
-                            {'node_names': ['map_server',
-                                            'amcl',
-                                            'controller_server',
+                            {'node_names': ['controller_server',
                                             'planner_server',
                                             'recoveries_server',
                                             'bt_navigator']}]

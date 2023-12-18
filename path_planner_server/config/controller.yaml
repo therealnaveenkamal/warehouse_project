@@ -66,8 +66,8 @@ local_costmap:
     ros__parameters:
       update_frequency: 5.0
       publish_frequency: 2.0
-      global_frame: map
-      robot_base_frame: robot_base_footprint
+      global_frame: robot_odom
+      robot_base_frame: robot_base_link
       use_sim_time: True
       rolling_window: true
       width: 1
@@ -77,8 +77,8 @@ local_costmap:
       plugins: ["voxel_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 5.0
-        inflation_radius: 0.8
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.35
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: True

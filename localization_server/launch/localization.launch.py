@@ -9,6 +9,11 @@ from launch.actions import TimerAction
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+
 
 def generate_launch_description():
     
@@ -20,6 +25,9 @@ def generate_launch_description():
             'map_file',
             default_value=map_file,
             description='Name of the Mapfile (without path)'
+        ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([os.path.join(get_package_share_directory('rb1_ros2_description'), 'launch', 'rb1_ros2_xacro.launch.py')])
         ),
         Node(
             package='rviz2',

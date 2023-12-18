@@ -9,6 +9,7 @@ Panels:
         - /Map1/Topic1
         - /LaserScan1/Topic1
         - /ParticleCloud1/Topic1
+        - /RobotModel1
       Splitter Ratio: 0.5
     Tree Height: 553
   - Class: rviz_common/Selection
@@ -74,8 +75,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 0.18385690450668335
-        Min Value: 0.18379104137420654
+        Max Value: 0.18381516635417938
+        Min Value: 0.1837870478630066
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -136,6 +137,8 @@ Visualization Manager:
           Value: true
         robot_imu_link:
           Value: true
+        robot_left_wheel_link:
+          Value: true
         robot_odom:
           Value: true
         robot_omni_backwheel_link:
@@ -143,6 +146,8 @@ Visualization Manager:
         robot_omni_front_leftwheel_link:
           Value: true
         robot_omni_front_rightwheel_link:
+          Value: true
+        robot_right_wheel_link:
           Value: true
         robot_top_cover_link:
           Value: true
@@ -172,11 +177,15 @@ Visualization Manager:
                     {}
                 robot_imu_link:
                   {}
+                robot_left_wheel_link:
+                  {}
                 robot_omni_backwheel_link:
                   {}
                 robot_omni_front_leftwheel_link:
                   {}
                 robot_omni_front_rightwheel_link:
+                  {}
+                robot_right_wheel_link:
                   {}
               robot_top_cover_link:
                 {}
@@ -233,6 +242,79 @@ Visualization Manager:
         Reliability Policy: Best Effort
         Value: /particle_cloud
       Value: true
+    - Alpha: 1
+      Class: rviz_default_plugins/RobotModel
+      Collision Enabled: false
+      Description File: ""
+      Description Source: Topic
+      Description Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /rb1_robot/robot_description
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        robot_base_docking_contact_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        robot_base_footprint:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        robot_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        robot_front_cover_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        robot_front_laser_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        robot_left_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        robot_omni_backwheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        robot_omni_front_leftwheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        robot_omni_front_rightwheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        robot_right_wheel_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        robot_top_cover_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Name: RobotModel
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -279,7 +361,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 7.68132209777832
+      Distance: 16.980955123901367
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
