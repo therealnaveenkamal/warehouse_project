@@ -39,18 +39,8 @@ def generate_launch_description():
             output='screen',
             parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}],
             arguments=['-d', PathJoinSubstitution([FindPackageShare('localization_server'), 'rviz_config', 'finalv1.rviz'])],
-            condition=IfCondition(LaunchConfiguration('use_sim_time'))
         ),
-        
-        Node(
-            package='rviz2',
-            executable='rviz2',
-            name='rviz2',
-            output='screen',
-            parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}],
-            arguments=['-d', PathJoinSubstitution([FindPackageShare('localization_server'), 'rviz_config', 'finalv1_real.rviz'])],
-            condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
-        ),
+    
         TimerAction(
             period=5.0,
             actions=[
