@@ -2,82 +2,190 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import TimerAction
+
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
+from launch.actions import TimerAction
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
+from launch.conditions import IfCondition, UnlessCondition
 
 def generate_launch_description():
 
-    controller_yaml = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'controller.yaml')
-    bt_navigator_yaml = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'bt_navigator.yaml')
-    planner_yaml = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'planner_server.yaml')
-    recovery_yaml = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'recovery.yaml')
-    nav2_yaml = os.path.join(get_package_share_directory('localization_server'), 'config', 'amcl_config.yaml')
-    map_file = os.path.join(get_package_share_directory('map_server'), 'config', 'warehouse_map_sim.yaml')
+    controller_yaml_real = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'real_controller.yaml')
+    bt_navigator_yaml_real = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'real_bt.yaml')
+    planner_yaml_real = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'real_planner_server.yaml')
+    recovery_yaml_real = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'real_recovery.yaml')
+    nav2_yaml_real = os.path.join(get_package_share_directory('localization_server'), 'config', 'amcl_config_real.yaml')
+    map_file_real = os.path.join(get_package_share_directory('map_server'), 'config', 'warehouse_map_real.yaml')
+
+    controller_yaml_sim = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'sim_controller.yaml')
+    bt_navigator_yaml_sim = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'sim_bt.yaml')
+    planner_yaml_sim = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'sim_planner_server.yaml')
+    recovery_yaml_sim = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'sim_recovery.yaml')
+    nav2_yaml_sim = os.path.join(get_package_share_directory('localization_server'), 'config', 'amcl_config_sim.yaml')
+    map_file_sim = os.path.join(get_package_share_directory('map_server'), 'config', 'warehouse_map_sim.yaml')
     
     return LaunchDescription([     
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([os.path.join(get_package_share_directory('rb1_ros2_description'), 'launch', 'rb1_ros2_xacro.launch.py')])
+        ),
+        DeclareLaunchArgument(
+            'use_sim_time',
+            default_value='True',
+            description='Use simulation time'
+        ),
         Node(
             package='rviz2',
             executable='rviz2',
             name='rviz2',
             output='screen',
-            parameters=[{'use_sim_time': True}],
-            arguments=['-d', PathJoinSubstitution([FindPackageShare('path_planner_server'), 'config', 'pathplanning.rviz'])]
+            parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            arguments=['-d', PathJoinSubstitution([FindPackageShare('path_planner_server'), 'rviz_config', 'pathplanning.rviz'])],
+            condition=IfCondition(LaunchConfiguration('use_sim_time')),
         ),
-
-
+        Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz2',
+            output='screen',
+            parameters=[{'use_sim_time': LaunchConfiguration('use_sim_time')}],
+            arguments=['-d', PathJoinSubstitution([FindPackageShare('path_planner_server'), 'rviz_config', 'pathplanning_real.rviz'])],
+            condition=UnlessCondition(LaunchConfiguration('use_sim_time')),
+        ),
         TimerAction(
             period=5.0,
             actions=[
-            Node(
-                package='nav2_controller',
-                executable='controller_server',
-                name='controller_server',
-                output='screen',
-                parameters=[controller_yaml],
-                remappings=[('/cmd_vel', '/robot/cmd_vel')]
-            ),
-            Node(
-            package='nav2_planner',
-            executable='planner_server',
-            name='planner_server',
-            output='screen',
-            parameters=[planner_yaml],
-            remappings=[('/cmd_vel', '/robot/cmd_vel')]
-            ),
-            Node(
-                package='nav2_recoveries',
-                executable='recoveries_server',
-                name='recoveries_server',
-                parameters=[recovery_yaml],
-                output='screen',
-                remappings=[('/cmd_vel', '/robot/cmd_vel')]
-            ),
-            Node(
-                package='nav2_bt_navigator',
-                executable='bt_navigator',
-                name='bt_navigator',
-                output='screen',
-                parameters=[bt_navigator_yaml],
-                remappings=[('/cmd_vel', '/robot/cmd_vel')]
-            ),
+                Node(
+                    package='nav2_map_server',
+                    executable='map_server',
+                    name='map_server',
+                    output='screen',
+                    parameters=[{'use_sim_time': True}, 
+                                {'yaml_filename':map_file_sim}],
+                    condition=IfCondition(LaunchConfiguration('use_sim_time'))
+                ),
 
-            Node(
-                package='nav2_lifecycle_manager',
-                executable='lifecycle_manager',
-                name='lifecycle_manager',
-                output='screen',
-                parameters=[{'autostart': True},
-                            {'node_names': ['controller_server',
-                                            'planner_server',
-                                            'recoveries_server',
-                                            'bt_navigator']}]
-            ),
-            Node(
-                    package='localization_server',
-                    executable='initial_pose_publisher_cpp',
-                    output='screen'
-                )
-        ],
+                Node(
+                    package='nav2_map_server',
+                    executable='map_server',
+                    name='map_server',
+                    output='screen',
+                    parameters=[{'use_sim_time': False}, 
+                                {'yaml_filename':map_file_real}],
+                    condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
+                ),
+                    
+                Node(
+                    package='nav2_amcl',
+                    executable='amcl',
+                    name='amcl',
+                    output='screen',
+                    parameters=[nav2_yaml_sim],
+                    condition=IfCondition(LaunchConfiguration('use_sim_time')),
+                    remappings=[('/cmd_vel', '/robot/cmd_vel')]
+                ),
+                Node(
+                    package='nav2_amcl',
+                    executable='amcl',
+                    name='amcl',
+                    output='screen',
+                    parameters=[nav2_yaml_real],
+                    condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
+                ),
+
+
+                Node(
+                    package='nav2_controller',
+                    executable='controller_server',
+                    name='controller_server',
+                    output='screen',
+                    parameters=[controller_yaml_sim],
+                    condition=IfCondition(LaunchConfiguration('use_sim_time')),
+                    remappings=[('/cmd_vel', '/robot/cmd_vel')]
+                ),
+                Node(
+                    package='nav2_controller',
+                    executable='controller_server',
+                    name='controller_server',
+                    output='screen',
+                    parameters=[controller_yaml_real],
+                    condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
+                ),
+
+
+                Node(
+                    package='nav2_planner',
+                    executable='planner_server',
+                    name='planner_server',
+                    output='screen',
+                    parameters=[planner_yaml_sim],
+                    condition=IfCondition(LaunchConfiguration('use_sim_time')),
+                    remappings=[('/cmd_vel', '/robot/cmd_vel')]
+                ),
+                Node(
+                    package='nav2_planner',
+                    executable='planner_server',
+                    name='planner_server',
+                    output='screen',
+                    parameters=[planner_yaml_real],
+                    condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
+                ),
+
+
+                Node(
+                    package='nav2_recoveries',
+                    executable='recoveries_server',
+                    name='recoveries_server',
+                    parameters=[recovery_yaml_sim],
+                    output='screen',
+                    condition=IfCondition(LaunchConfiguration('use_sim_time')),
+                    remappings=[('/cmd_vel', '/robot/cmd_vel')]
+                ),
+                Node(
+                    package='nav2_recoveries',
+                    executable='recoveries_server',
+                    name='recoveries_server',
+                    parameters=[recovery_yaml_real],
+                    output='screen',
+                    condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
+                ),
+
+                Node(
+                    package='nav2_bt_navigator',
+                    executable='bt_navigator',
+                    name='bt_navigator',
+                    output='screen',
+                    parameters=[bt_navigator_yaml_sim],
+                    condition=IfCondition(LaunchConfiguration('use_sim_time')),
+                    remappings=[('/cmd_vel', '/robot/cmd_vel')]
+                ),
+                Node(
+                    package='nav2_bt_navigator',
+                    executable='bt_navigator',
+                    name='bt_navigator',
+                    output='screen',
+                    parameters=[bt_navigator_yaml_real],
+                    condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
+                ),
+
+                Node(
+                    package='nav2_lifecycle_manager',
+                    executable='lifecycle_manager',
+                    name='lifecycle_manager',
+                    output='screen',
+                    parameters=[{'autostart': True},
+                                {'node_names': ['map_server',
+                                                'amcl',
+                                                'controller_server',
+                                                'planner_server',
+                                                'recoveries_server',
+                                                'bt_navigator']}])
+            ],
         )
+
+
     ])

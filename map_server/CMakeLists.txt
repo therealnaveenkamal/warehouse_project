@@ -34,4 +34,9 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
+install(
+  DIRECTORY rviz_config
+  DESTINATION share/${PROJECT_NAME}
+)
+
 ament_package()
