@@ -29,9 +29,6 @@ def generate_launch_description():
             default_value='True',
             description='Use simulation time'
         ),
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([os.path.join(get_package_share_directory('rb1_ros2_description'), 'launch', 'rb1_ros2_xacro.launch.py')])
-        ),
         Node(
             package='rviz2',
             executable='rviz2',

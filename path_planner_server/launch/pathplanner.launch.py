@@ -14,7 +14,6 @@ from launch.substitutions import LaunchConfiguration
 from launch.conditions import IfCondition, UnlessCondition
 
 def generate_launch_description():
-
     controller_yaml_real = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'real_controller.yaml')
     bt_navigator_yaml_real = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'real_bt.yaml')
     planner_yaml_real = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'real_planner_server.yaml')
@@ -29,10 +28,12 @@ def generate_launch_description():
     nav2_yaml_sim = os.path.join(get_package_share_directory('localization_server'), 'config', 'amcl_config_sim.yaml')
     map_file_sim = os.path.join(get_package_share_directory('map_server'), 'config', 'warehouse_map_sim.yaml')
     
+    filters_sim_yaml = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'filters_sim.yaml')
+    filters_real_yaml = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'filter_real.yaml')
+
+    waypoint_follower_yaml = os.path.join(get_package_share_directory('path_planner_server'), 'config', 'waypoint_follower.yaml')
+
     return LaunchDescription([     
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([os.path.join(get_package_share_directory('rb1_ros2_description'), 'launch', 'rb1_ros2_xacro.launch.py')])
-        ),
         DeclareLaunchArgument(
             'use_sim_time',
             default_value='True',
@@ -58,7 +59,7 @@ def generate_launch_description():
                                 {'yaml_filename':map_file_sim}],
                     condition=IfCondition(LaunchConfiguration('use_sim_time'))
                 ),
-
+                
                 Node(
                     package='nav2_map_server',
                     executable='map_server',
@@ -68,6 +69,43 @@ def generate_launch_description():
                                 {'yaml_filename':map_file_real}],
                     condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
                 ),
+
+                Node(
+                    package='nav2_map_server',
+                    executable='map_server',
+                    name='filter_mask_server',
+                    output='screen',
+                    emulate_tty=True,
+                    parameters=[filters_sim_yaml],
+                    condition=IfCondition(LaunchConfiguration('use_sim_time'))
+                ),
+
+                Node(
+                    package='nav2_map_server',
+                    executable='costmap_filter_info_server',
+                    name='costmap_filter_info_server',
+                    output='screen',
+                    emulate_tty=True,
+                    parameters=[filters_sim_yaml],
+                    condition=IfCondition(LaunchConfiguration('use_sim_time'))),
+
+                Node(
+                    package='nav2_map_server',
+                    executable='map_server',
+                    name='filter_mask_server',
+                    output='screen',
+                    emulate_tty=True,
+                    parameters=[filters_real_yaml],
+                    condition=UnlessCondition(LaunchConfiguration('use_sim_time'))),
+
+                Node(
+                    package='nav2_map_server',
+                    executable='costmap_filter_info_server',
+                    name='costmap_filter_info_server',
+                    output='screen',
+                    emulate_tty=True,
+                    parameters=[filters_real_yaml],
+                    condition=UnlessCondition(LaunchConfiguration('use_sim_time'))),
                     
                 Node(
                     package='nav2_amcl',
@@ -163,6 +201,13 @@ def generate_launch_description():
                 ),
 
                 Node(
+                    package='nav2_waypoint_follower',
+                    executable='waypoint_follower',
+                    name='waypoint_follower',
+                    output='screen',
+                    parameters=[waypoint_follower_yaml]
+                ),
+                Node(
                     package='nav2_lifecycle_manager',
                     executable='lifecycle_manager',
                     name='lifecycle_manager',
@@ -173,7 +218,9 @@ def generate_launch_description():
                                                 'controller_server',
                                                 'planner_server',
                                                 'recoveries_server',
-                                                'bt_navigator']}])
+                                                'bt_navigator',
+                                                'filter_mask_server',
+                                                'costmap_filter_info_server', 'waypoint_follower']}])
             ],
         )
 
